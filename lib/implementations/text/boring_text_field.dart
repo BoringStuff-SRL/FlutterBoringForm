@@ -22,14 +22,18 @@ class BoringTextField extends BoringFormField<String> {
     super.decoration,
     super.readOnly,
     super.onChanged,
-  }) : super(validationFunction:
-            (BoringFormController formController, String? value) {
-          final error = validationFunction?.call(formController, value);
-          final emptyError = !allowEmpty && (value == null || value.isEmpty)
-              ? "Value cannot be empty"
-              : null;
-          return error ?? emptyError;
-        });
+  }) : super(
+            validationFunction: validationFunction == null && allowEmpty
+                ? null
+                : (BoringFormController formController, String? value) {
+                    final error =
+                        validationFunction?.call(formController, value);
+                    final emptyError =
+                        !allowEmpty && (value == null || value.isEmpty)
+                            ? "Value cannot be empty"
+                            : null;
+                    return error ?? emptyError;
+                  });
 
   @override
   void onObservedFieldsChange(BoringFormController formController) {}
@@ -58,8 +62,10 @@ class BoringTextField extends BoringFormField<String> {
   void onSelfChange(BoringFormController formController, String? fieldValue) {
     var cursorPos = _textEditingController.selection.base.offset;
     _textEditingController.text = (fieldValue ?? "");
-    _textEditingController.selection =
-        TextSelection.collapsed(offset: cursorPos);
+    if (fieldValue != null) {
+      _textEditingController.selection =
+          TextSelection.collapsed(offset: cursorPos);
+    }
   }
 
   // @override

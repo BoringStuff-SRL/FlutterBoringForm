@@ -1,19 +1,27 @@
 import "package:boring_form/boring_form.dart";
+import 'package:boring_form/implementations/pickers/boringFilePickerV2/boring_drop_zone_decoration.dart';
+import 'package:boring_form/implementations/pickers/boringFilePickerV2/boring_file_picker_v2.dart';
 import 'package:flutter/material.dart';
 
 class FormExample0 extends StatelessWidget {
   FormExample0({super.key});
 
-  final c = BoringFormController(/*initialValue: {'num': -12323.123}*/);
+  final c = BoringFormController(
+    initialValue: {'num': 123456},
+    validationBehaviour: ValidationBehaviour.onSubmit,
+    fieldRequiredLabelBehaviour: FieldRequiredLabelBehaviour.always,
+  );
 
   final myStyle = BoringFormStyle(
-      inputDecoration: InputDecoration(
-        border: OutlineInputBorder(),
-      ),
-      textStyle: TextStyle(color: Colors.red),
-      eraseValueWidget: Icon(Icons.abc_outlined));
+    inputDecoration: const InputDecoration(
+      border: OutlineInputBorder(),
+    ),
+    labelOverField: true,
+    textStyle: const TextStyle(color: Colors.red),
+    eraseValueWidget: const Icon(Icons.abc_outlined),
+  );
 
-  final titleStyle = TextStyle(fontSize: 20, fontWeight: FontWeight.bold);
+  final titleStyle = const TextStyle(fontSize: 20, fontWeight: FontWeight.bold);
 
   @override
   Widget build(BuildContext context) {
@@ -22,8 +30,12 @@ class FormExample0 extends StatelessWidget {
       formController: c,
       child: Column(
         children: [
+          BoringFilePickerV2(
+            fieldPath: ['ccc'],
+            readOnly: true,
+          ),
           BoringImagePickerWithPreview(
-            fieldPath: ["image"],
+            fieldPath: const ["image"],
             imagePickerWithPreviewDecoration:
                 BoringImagePickerWithPreviewDecoration(
               previewImageWrapper: (context, child) => ConstrainedBox(
@@ -105,84 +117,26 @@ class FormExample0 extends StatelessWidget {
           // //////////////////////////////
           Text("Number fields", style: titleStyle),
 
-          Text("number"),
+          const Text("number"),
           BoringNumberField(
-            fieldPath: ["num"],
-            decimalSeparator: '.',
-            thousandsSeparator: ',',
-            decimalPlaces: 2,
-            validationFunction: (formController, value) =>
-                value == null ? "Insert value" : null,
-          ),
-          // Text("slider"),
-          // BoringSlider(
-          //   fieldPath: ["slider"],
-          // ),
-          // /////////////////////////////
-          // Text("Text fields", style: titleStyle),
-          // Text("email"),
-          // BoringEmailField(
-          //   fieldPath: ["email"],
-          //   invalidEmailMessage: "invalid email",
-          //   validationFunction: (formController, value) =>
-          //       value == null ? "Insert value" : null,
-          // ),
-          // Text("password"),
-          // BoringPasswordField(
-          //   fieldPath: ["password"],
-          //   validationFunction: (formController, value) =>
-          //       value == null ? "Insert value" : null,
-          // ),
-          // Text("phone"),
-          // BoringPhoneNumberField(
-          //   fieldPath: ["phone"],
-          //   invalidPhoneMessage: "Invalid phone",
-          // ),
-          Text("Text"),
-          BoringTextField(
-            fieldPath: ["text"],
+            fieldPath: ['nums'],
             decoration: (formController) =>
-                BoringFieldDecoration(label: 'labell'),
-            validationFunction: (formController, value) =>
-                value == null ? "Insert value" : null,
+                BoringFieldDecoration(label: 'QUESTA E LA LABEL'),
           ),
-          // const Text("CIAO LEO"),
-          // BoringFormChildWidget(
-          //     observedFields: const [
-          //       ["cognome"],
-          //       ["anag", "nome"]
-          //     ],
-          //     builder: (context, formController) {
-          //       return Text("${formController.getValue([
-          //             'nome'
-          //           ])} ${formController.getValue([
-          //             'cognome'
-          //           ])} ${formController.getValue(
-          //         ['anag', 'nome'],
-          //       )}");
-          //       // return Text(formController.value["asd"]);
-          //     }),
-          BoringFormChildWidget(
+          BoringFormChildWidget.withChildFieldPath(
+            childFieldPath: ['third'],
+            observedFields: [
+              ['first']
+            ],
+            builder: (context, formController, fieldPath) {
+              final firstVal = formController.value['first'];
 
-              // observedFields: [
-              //   ['single', 'test'],
-              //   ['multi'],
-              // ],
-              builder: (context, formController) {
-            // print(formController.value);
-
-            return const Text("WATCHER");
-            // return Text(formController.value["asd"]);
-          }),
-          BoringPasswordField(
-            // allowEmpty: true,
-            fieldPath: const ["anag", "nome"],
-            validationFunction: (formController, value) =>
-                ((value?.length ?? 0) > 8) ? null : "Password at least 8 chars",
+              if (firstVal == null || firstVal == '') {
+                return BoringTextField(fieldPath: fieldPath, allowEmpty: false);
+              }
+              return Container();
+            },
           ),
-          // const BoringSlider(
-          //   fieldPath: ["test", "num"],
-          // ),
           ElevatedButton(
               onPressed: () {
                 c.setFieldValue(["nome"], "(${c.getValue(["nome"])})");
@@ -198,6 +152,7 @@ class FormExample0 extends StatelessWidget {
                 print(c.value);
               },
               child: const Text("PRINT")),
+          ElevatedButton(onPressed: () {}, child: const Text("VAL FUNCS")),
           ElevatedButton(
               onPressed: () {
                 c.value = {
@@ -240,13 +195,13 @@ class FormExample0 extends StatelessWidget {
                                       title: 'asd',
                                       form: BoringForm(
                                           child: BoringTextField(
-                                        fieldPath: ['sss'],
+                                        fieldPath: const ['sss'],
                                       ))),
                                   BoringFormWithTitle(
                                       title: 'asd',
                                       form: BoringForm(
                                           child: BoringTextField(
-                                        fieldPath: ['sss'],
+                                        fieldPath: const ['sss'],
                                       ))),
                                 ],
                               ),
@@ -255,7 +210,7 @@ class FormExample0 extends StatelessWidget {
                                 onPressed: () {
                                   print(formController.value);
                                 },
-                                child: Text('print valuee')),
+                                child: const Text('print valuee')),
                           ],
                         ),
                       ),

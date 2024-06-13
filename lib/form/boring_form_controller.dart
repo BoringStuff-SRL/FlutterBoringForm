@@ -4,6 +4,12 @@ import 'package:flutter/foundation.dart';
 //enum ChangedEvent { valueChanged, sumbittedForValidation }
 enum ValidationBehaviour { always, onSubmit, never }
 
+enum FieldRequiredLabelBehaviour {
+  always,
+  hiddenWhenValid,
+  never;
+}
+
 class MapKeyListException implements Exception {
   int _errorIndex;
   final List<String> _fullPath;
@@ -26,6 +32,10 @@ class MapKeyListException implements Exception {
 
 //enum ValidationType { always, onSubmit }
 extension on Map<String, dynamic> {
+  bool pathExists(FieldPath path) {
+    return true;
+  }
+
   dynamic getValue(List<String> keysList) {
     if (keysList.isEmpty) {
       return null;
@@ -112,11 +122,14 @@ class BoringFormControllerValue extends ChangeNotifier {
   final Map<String, dynamic> _value;
   final Map<String, dynamic> initialValue;
   final ValidationBehaviour validationBehaviour;
+  final FieldRequiredLabelBehaviour fieldRequiredLabelBehaviour;
 
-  BoringFormControllerValue(
-      {Map<String, dynamic>? initialValue,
-      this.validationBehaviour = ValidationBehaviour.always})
-      : _value = initialValue ?? {},
+  BoringFormControllerValue({
+    Map<String, dynamic>? initialValue,
+    this.validationBehaviour = ValidationBehaviour.onSubmit,
+    this.fieldRequiredLabelBehaviour =
+        FieldRequiredLabelBehaviour.hiddenWhenValid,
+  })  : _value = initialValue ?? {},
         initialValue = initialValue ?? {};
 
   dynamic getValue(List<String> fieldPath, {dynamic defaultValue}) =>
@@ -130,8 +143,10 @@ class BoringFormControllerValue extends ChangeNotifier {
     if (_equality.equals(old, value)) {
       return;
     }
+
     _value.setValue(fieldPath, value);
     // print(_value);
+
     notifyListeners();
   }
 
@@ -178,9 +193,17 @@ class BoringFormController extends BoringFormControllerValue {
   // final Map<FieldPath, bool> _errors = {};
 
   final Map<FieldPath, ValidationFunction> _validationFunctions = {};
-  BoringFormController({super.initialValue});
+  BoringFormController({
+    super.initialValue,
+    super.validationBehaviour,
+    super.fieldRequiredLabelBehaviour,
+  });
 
   bool get isValid {
+    if (!_isSubmitted) {
+      _isSubmitted = true;
+      notifyListeners();
+    }
     return _validationFunctions.entries.every(
         (element) => element.value?.call(this, getValue(element.key)) == null);
     //return _errors.values.every((element) => element == false);
@@ -193,11 +216,12 @@ class BoringFormController extends BoringFormControllerValue {
         : null;
   }
 
-  // @override
-  // void notifyListeners() {
-  //   // TODO: implement notifyListeners
-  //   super.notifyListeners();
-  // }
+  void removeValidationFunction(FieldPath fieldPath) {
+    _validationFunctions.removeWhere(
+      (key, value) =>
+          BoringFormControllerValue._equality.equals(key, fieldPath),
+    );
+  }
 
   String? _getFieldError(FieldPath fieldPath) =>
       _validationFunctions[fieldPath]?.call(this, getValue(fieldPath));
@@ -206,7 +230,7 @@ class BoringFormController extends BoringFormControllerValue {
       ? _validationFunctions[fieldPath]?.call(this, getValue(fieldPath))
       : null;
 
-  bool get _isSubmitted => true;
+  bool _isSubmitted = false;
 
   bool get _shouldShowError =>
       validationBehaviour == ValidationBehaviour.always ||

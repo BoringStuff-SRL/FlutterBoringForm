@@ -71,7 +71,8 @@ abstract class BoringFormFieldWithAsyncCalculations<T, TT>
                         children: [
                           if (formTheme.style.labelOverField &&
                               fieldDecoration?.label != null)
-                            labelOverField(formTheme, fieldDecoration!),
+                            labelOverField(formTheme, fieldDecoration!,
+                                formController, formTheme.style),
                           builder(context, formTheme, formController,
                               value.fieldValue, value.error, snapshot),
                         ],

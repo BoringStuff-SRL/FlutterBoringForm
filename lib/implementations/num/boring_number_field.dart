@@ -142,7 +142,10 @@ class BoringNumberField extends BoringFormField<num> {
   @override
   Widget builder(BuildContext context, BoringFormTheme formTheme,
       BoringFormController formController, num? fieldValue, String? error) {
+    // for initial value
     if (!hasSetInitialValue && fieldValue != null) {
+      var cursorPos = _textEditingController.selection.base.offset;
+
       final formatter =
           NumberFormat('###,###.###', decimalSeparator == '.' ? 'en' : 'it');
 
@@ -150,6 +153,10 @@ class BoringNumberField extends BoringFormField<num> {
           .formatEditUpdate(TextEditingValue.empty,
               TextEditingValue(text: formatter.format(fieldValue)))
           .text;
+
+      _textEditingController.selection =
+          TextSelection.collapsed(offset: cursorPos);
+
       hasSetInitialValue = true;
     }
 

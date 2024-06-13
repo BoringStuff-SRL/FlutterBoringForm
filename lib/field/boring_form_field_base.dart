@@ -36,18 +36,59 @@ abstract class BoringFormFieldBase<T, TT> extends StatelessWidget {
   void onSelfChange(BoringFormController formController, T? fieldValue);
 
   Widget labelOverField(
-          BoringFormTheme formTheme, BoringFieldDecoration fieldDecoration) =>
-      Padding(
-        padding: formTheme.style.labelOverFieldPadding ??
-            const EdgeInsets.only(bottom: 4),
-        child: Align(
-          alignment: formTheme.style.labelOverFieldAlignment,
-          child: Text(
+    BoringFormTheme formTheme,
+    BoringFieldDecoration fieldDecoration,
+    BoringFormController formController,
+    BoringFormStyle formStyle,
+  ) {
+    return Padding(
+      padding: formTheme.style.labelOverFieldPadding ??
+          const EdgeInsets.only(bottom: 4),
+      child: Align(
+        alignment: formTheme.style.labelOverFieldAlignment,
+        child: _label(formTheme, fieldDecoration, formController, formStyle),
+      ),
+    );
+  }
+
+  Widget _label(
+    BoringFormTheme formTheme,
+    BoringFieldDecoration fieldDecoration,
+    BoringFormController formController,
+    BoringFormStyle formStyle,
+  ) =>
+      Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
             fieldDecoration.label!,
             style: formTheme.style.inputDecoration.labelStyle,
           ),
-        ),
+          _buildRequiredFieldLabelOverField(formStyle, formController),
+        ],
       );
+
+  Widget _buildRequiredFieldLabelOverField(
+      BoringFormStyle formStyle, BoringFormController formController) {
+    if (validationFunction == null) return Container();
+
+    final label = formStyle.fieldRequiredLabelWidget ??
+        const Text(' *', style: TextStyle(color: Colors.red));
+
+    switch (formController.fieldRequiredLabelBehaviour) {
+      case FieldRequiredLabelBehaviour.always:
+        return label;
+      case FieldRequiredLabelBehaviour.hiddenWhenValid:
+        final valFunValue = validationFunction?.call(
+            formController, formController.getValue(fieldPath));
+        if (valFunValue == null) {
+          return Container();
+        }
+        return label;
+      case FieldRequiredLabelBehaviour.never:
+        return Container();
+    }
+  }
 
   @override
   Widget build(BuildContext context);
@@ -63,9 +104,11 @@ abstract class BoringFormFieldBase<T, TT> extends StatelessWidget {
     final decoration = getFieldDecoration(formController);
 
     return formStyle.inputDecoration.copyWith(
-        labelText: (formStyle.labelOverField || decoration?.label == null)
+        label: (formStyle.labelOverField ||
+                decoration == null ||
+                decoration.label == null)
             ? null
-            : decoration?.label,
+            : _label(formTheme, decoration, formController, formStyle),
         icon: decoration?.icon,
         errorText: errorMessage,
         helperText: decoration?.helperText,

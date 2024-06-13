@@ -16,6 +16,7 @@ class BoringFormStyle {
   final EdgeInsets? sectionPadding;
   final EdgeInsets? sectionMargin;
   final Widget eraseValueWidget;
+  final Widget? fieldRequiredLabelWidget;
 
   BoringFormStyle(
       {this.fieldsPadding = const EdgeInsets.all(8),
@@ -31,6 +32,7 @@ class BoringFormStyle {
       this.textStyle,
       this.sectionBoxDecoration,
       this.textAlign = TextAlign.start,
+      this.fieldRequiredLabelWidget,
       this.eraseValueWidget = const Icon(Icons.close)})
       : assert(inputDecoration.label == null, _getFieldAssertionError("label")),
         assert(inputDecoration.icon == null, _getFieldAssertionError("icon")),
